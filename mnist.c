@@ -37,19 +37,19 @@ static void mnist_read_image_file(const char *filename, double ***data)
     *data =(double **) malloc(number_of_items * sizeof(double *));
     for (int i = 0; i < number_of_items; i++) {
      (*data)[i] =(double *) malloc(MNIST_IMAGE_SIZE * sizeof(double));
-    }
+   }
 
-    for (int i = 0; i < number_of_items; i++) {
-      for (int j = 0; j < MNIST_IMAGE_SIZE; j++) {
-	unsigned char buf;
-	fread(&buf, sizeof(unsigned char), 1, file);
-	(*data)[i][ j] = buf / 255.0;
-	if (MNIST_DEBUG && MNIST_DEBUG2) { printf("%f\n",(*data)[i][ j]); }
-      }
+   for (int i = 0; i < number_of_items; i++) {
+    for (int j = 0; j < MNIST_IMAGE_SIZE; j++) {
+      unsigned char buf;
+      fread(&buf, sizeof(unsigned char), 1, file);
+      (*data)[i][j] = buf / 255.0;
+      if (MNIST_DEBUG && MNIST_DEBUG2) { printf("%f\n",(*data)[i][j]); }
     }
   }
+}
 
-  fclose(file);
+fclose(file);
 }
 
 static void mnist_read_label_file(const char *filename, int **data)
@@ -80,7 +80,7 @@ static void mnist_read_label_file(const char *filename, int **data)
     for (int i = 0; i < number_of_items; i++) {
       unsigned char buf;
       fread(&buf, sizeof(unsigned char), 1, file);
-     (*data)[i] = buf;
+      (*data)[i] = buf;
       if (MNIST_DEBUG && MNIST_DEBUG2) { printf("%d\n",(*data)[i]); }
     }
   }
@@ -99,11 +99,11 @@ void mnist_initialize(double ***training_image, int **training_label, double ***
 void mnist_finalize(double **training_image, int *training_label, double **test_image, int *test_label)
 {
   for (int i = 0; i < MNIST_TRAINING_DATA_SIZE; i++) { free(training_image[i]); }
-  free(training_image);
+    free(training_image);
   free(training_label);
 
-  for (int i = 0; i < MNIST_TEST_DATA_SIZE; i++) { free(test_image[ i]); }
-  free(test_image);
+  for (int i = 0; i < MNIST_TEST_DATA_SIZE; i++) { free(test_image[i]); }
+    free(test_image);
   free(test_label);
 }
 
@@ -115,31 +115,31 @@ void mnist_generate_png(double **data, const int n, const char *filename)
   int gray[n_grayscale];
   for (int i = 0; i < n_grayscale; i++) { gray[i] = gdImageColorAllocate(im, i, i, i); }
 
-  for (int i = 0; i < MNIST_IMAGE_ROW_SIZE; i++) {
-    for (int j = 0; j < MNIST_IMAGE_COL_SIZE; j++) {
-      int index =(int)((n_grayscale - 1) * data[n][ j + MNIST_IMAGE_COL_SIZE * i]);
-      if (MNIST_DEBUG && MNIST_DEBUG3) { printf("%d ", index); }
-      gdImageSetPixel(im, j, i, gray[index]);
+    for (int i = 0; i < MNIST_IMAGE_ROW_SIZE; i++) {
+      for (int j = 0; j < MNIST_IMAGE_COL_SIZE; j++) {
+        int index =(int)((n_grayscale - 1) * data[n][j + MNIST_IMAGE_COL_SIZE * i]);
+        if (MNIST_DEBUG && MNIST_DEBUG3) { printf("%d ", index); }
+        gdImageSetPixel(im, j, i, gray[index]);
+      }
     }
+
+    {
+      FILE *file = fopen(filename, "wb");
+      gdImagePng(im, file);
+      fclose(file);
+    }
+
+    gdImageDestroy(im);
+
+    return;
   }
 
+  int mnist_local_main(void)
   {
-    FILE *file = fopen(filename, "wb");
-    gdImagePng(im, file);
-    fclose(file);
-  }
+    double **training_image, **test_image;
+    int *training_label, *test_label;
 
-  gdImageDestroy(im);
-
-  return;
-}
-
-int mnist_local_main(void)
-{
-  double **training_image, **test_image;
-  int *training_label, *test_label;
-
-  mnist_initialize(&training_image, &training_label, &test_image, &test_label);
+    mnist_initialize(&training_image, &training_label, &test_image, &test_label);
 
   {  // Demo: generate 60 png files while printing corresponding labels
     for (int i = 0; i < MNIST_TRAINING_DATA_SIZE; i += 1000) {
