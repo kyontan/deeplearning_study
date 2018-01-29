@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   int batch_size = atoi(argv[1]);
   int n_epoch = atoi(argv[2]);
 
-  double **training_image, **test_image;
+  float **training_image, **test_image;
   int *training_label, *test_label;
   mnist_initialize(&training_image, &training_label, &test_image, &test_label);
 
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     // for (int i = 0; i < MNIST_TRAINING_DATA_SIZE; i++) {
     for (int i = 0; i < n_epoch; i++) {
       initializeDW(&network);
-      double error = 0;
+      float error = 0;
 
       for(int j = 0; j < batch_size; j++) {
         int k = (int)(MNIST_TRAINING_DATA_SIZE * sfmt_genrand_real2(&rng));
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
         setInput(&network, training_image[k]);
         forwardPropagation(&network, sigmoid);
 
-        // double z[MNIST_LABEL_SIZE] = { 0., };
+        // float z[MNIST_LABEL_SIZE] = { 0., };
         // z[training_label[k]] = 1.;
         error += updateByBackPropagation(&network, training_image[k]);
       }
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
     // for (int i = 0; i < MNIST_TRAINING_DATA_SIZE; i++) {
     for (int i = 0; i < n_epoch; i++) {
       initializeDW(&network2);
-      double error = 0;
+      float error = 0;
 
       for(int j = 0; j < batch_size; j++) {
         int k = (int)(MNIST_TRAINING_DATA_SIZE * sfmt_genrand_real2(&rng));
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
         setInput(&network2, training_image[k]);
         forwardPropagation(&network2, sigmoid);
 
-        // double z[MNIST_LABEL_SIZE] = { 0., };
+        // float z[MNIST_LABEL_SIZE] = { 0., };
         // z[training_label[k]] = 1.;
         error += updateByBackPropagationPartial(&network2, network2.layer[n_hidden_layer-1].z);
       }
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     // for (int i = 0; i < MNIST_TRAINING_DATA_SIZE; i++) {
     for (int i = 0; i < n_epoch; i++) {
       initializeDW(&network2);
-      double error = 0;
+      float error = 0;
 
       for(int j = 0; j < batch_size; j++) {
         int k = (int)(MNIST_TRAINING_DATA_SIZE * sfmt_genrand_real2(&rng));
@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
         setInput(&network2, training_image[k]);
         forwardPropagation(&network2, sigmoid);
 
-        double z[MNIST_LABEL_SIZE] = { 0., };
+        float z[MNIST_LABEL_SIZE] = { 0., };
         z[training_label[k]] = 1.;
         error += updateByBackPropagation(&network2, z);
       }
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
       setInput(&network2, test_image[k]);
       forwardPropagation(&network2, sigmoid);
       int maxj = 0;
-      double maxz = 0.;
+      float maxz = 0.;
 
       for (int j = 0; j < n; j++){
         if (maxz < output_layer->z[j]) {
@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
       correct += (maxj == test_label[k]);
     }
 
-    fprintf(stderr, "success_rate = %f\n", (double)correct / MNIST_TEST_DATA_SIZE);
+    fprintf(stderr, "success_rate = %f\n", (float)correct / MNIST_TEST_DATA_SIZE);
   }
 
   mnist_finalize(training_image, training_label, test_image, test_label);

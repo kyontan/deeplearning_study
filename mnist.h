@@ -18,8 +18,8 @@
 #define MNIST_IMAGE_SIZE ( ( MNIST_IMAGE_ROW_SIZE ) * ( MNIST_IMAGE_COL_SIZE ) )
 #define MNIST_LABEL_SIZE ( 10 )
 
-void mnist_initialize ( double ***, int **, double ***, int ** );
-void mnist_finalize ( double **, int *, double **, int * );
-void mnist_generate_png ( double **, const int, const char * );
+void mnist_initialize ( float ***, int **, float ***, int ** );
+void mnist_finalize ( float **, int *, float **, int * );
+void mnist_generate_png ( float **, const int, const char * );
 
 #endif // _MNIST_H_

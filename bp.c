@@ -7,13 +7,13 @@
 extern void sfmt_init_gen_rand(sfmt_t * sfmt, uint32_t seed);
 extern double sfmt_genrand_real2(sfmt_t * sfmt);
 
-double all_to_all(Network *n, const int i, const int j) { return 1.; }
-double uniform_random(Network *n, const int i, const int j) { return 1. - 2. * sfmt_genrand_real2(&n->rng); }
-double sparse_random(Network *n, const int i, const int j) {
+float all_to_all(Network *n, const int i, const int j) { return 1.; }
+float uniform_random(Network *n, const int i, const int j) { return 1. - 2. * sfmt_genrand_real2(&n->rng); }
+float sparse_random(Network *n, const int i, const int j) {
   return(sfmt_genrand_real2(&n->rng) < 0.5) ? uniform_random(n, i, j) : 0.;
 }
-double sigmoid(double x) { return 1. /(1. + exp(- x)); }
-double relu(double x) { return (0 < x) ? x : 0; }
+float sigmoid(float x) { return 1. /(1. + exp(- x)); }
+float relu(float x) { return (0 < x) ? x : 0; }
 
 void createNetwork(Network *network, const int number_of_layers, const sfmt_t rng) {
   network->layer = (Layer *) malloc(number_of_layers * sizeof(Layer));
@@ -50,7 +50,7 @@ void deleteLayer(Network *network, const int layer_id) {
   free(layer->delta);
 }
 
-void createConnection(Network *network, const int layer_id, double(*func)(Network *, const int, const int)) {
+void createConnection(Network *network, const int layer_id, float(*func)(Network *, const int, const int)) {
   Connection *connection = &network->connection[layer_id];
 
   const int n_pre = network->layer[layer_id].n + 1; // +1 for bias
@@ -114,7 +114,7 @@ void setInput(Network *network, Neuron x[]) {
   }
 }
 
-void forwardPropagation(Network *network, double(*activation)(double)) {
+void forwardPropagation(Network *network, float(*activation)(float)) {
   for(int i = 0; i < network->n - 1; i++) {
     Layer *l_pre = &network->layer[i];
     Layer *l_post = &network->layer[i + 1];
@@ -131,8 +131,8 @@ void forwardPropagation(Network *network, double(*activation)(double)) {
 
 // update output layers
 // @returns error
-double updateByBackPropagationOutputLayer(Network *network, Neuron z[], const double Eta) {
-  double error = 0;
+float updateByBackPropagationOutputLayer(Network *network, Neuron z[], const float Eta) {
+  float error = 0;
 
   // output layer's delta
   Layer *layer = &network->layer[network->n - 1];
@@ -146,7 +146,7 @@ double updateByBackPropagationOutputLayer(Network *network, Neuron z[], const do
 }
 
 // update hidden (not output) layers
-void updateByBackPropagationInLayer(Network *network, Neuron z[], const int layer_idx, const double Eta) {
+void updateByBackPropagationInLayer(Network *network, Neuron z[], const int layer_idx, const float Eta) {
   Layer *l_pre = &network->layer[layer_idx];
   Layer *l_post = &network->layer[layer_idx + 1];
   Connection *c = &network->connection[layer_idx];
@@ -170,11 +170,11 @@ void updateByBackPropagationInLayer(Network *network, Neuron z[], const int laye
   }
 }
 
-double updateByBackPropagation(Network *network, Neuron z[]) {
-  const double Eta = 0.15;
+float updateByBackPropagation(Network *network, Neuron z[]) {
+  const float Eta = 0.15;
 
   // output layer's delta
-  double error = updateByBackPropagationOutputLayer(network, z, Eta);
+  float error = updateByBackPropagationOutputLayer(network, z, Eta);
 
   // hidden layer
   for(int layer_idx = network->n - 2; 0 <= layer_idx; layer_idx--) {
@@ -184,11 +184,11 @@ double updateByBackPropagation(Network *network, Neuron z[]) {
   return error;
 }
 
-double updateByBackPropagationPartial(Network *network, Neuron z[]) {
-  const double Eta = 0.15;
+float updateByBackPropagationPartial(Network *network, Neuron z[]) {
+  const float Eta = 0.15;
 
   // output layer's delta
-  double error = updateByBackPropagationOutputLayer(network, z, Eta);
+  float error = updateByBackPropagationOutputLayer(network, z, Eta);
   updateByBackPropagationInLayer(network, z, network->n - 2, Eta);
 
   return error;
@@ -270,8 +270,8 @@ int bp_local_main(void) {
   const int number_of_training_data = 4;
 
   // Training
-  double error = 1.0; // arbitrary large number
-  const double Epsilon = 0.001; // tolerance
+  float error = 1.0; // arbitrary large number
+  const float Epsilon = 0.001; // tolerance
   int i = 0;
 
   dump_network(&network);

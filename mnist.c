@@ -6,7 +6,7 @@
 #define MNIST_DEBUG2 0
 #define MNIST_DEBUG3 0
 
-static void mnist_read_image_file(const char *filename, double ***data)
+static void mnist_read_image_file(const char *filename, float ***data)
 {
   FILE *file = fopen(filename, "rb");
 
@@ -34,9 +34,9 @@ static void mnist_read_image_file(const char *filename, double ***data)
   }
 
   { // read the data
-    *data =(double **) malloc(number_of_items * sizeof(double *));
+    *data =(float **) malloc(number_of_items * sizeof(float *));
     for (int i = 0; i < number_of_items; i++) {
-     (*data)[i] =(double *) malloc(MNIST_IMAGE_SIZE * sizeof(double));
+     (*data)[i] =(float *) malloc(MNIST_IMAGE_SIZE * sizeof(float));
    }
 
    for (int i = 0; i < number_of_items; i++) {
@@ -88,7 +88,7 @@ static void mnist_read_label_file(const char *filename, int **data)
   fclose(file);
 }
 
-void mnist_initialize(double ***training_image, int **training_label, double ***test_image, int **test_label)
+void mnist_initialize(float ***training_image, int **training_label, float ***test_image, int **test_label)
 {
   mnist_read_image_file(MNIST_TRAINING_IMAGE_FILE, training_image);
   mnist_read_label_file(MNIST_TRAINING_LABEL_FILE, training_label);
@@ -96,7 +96,7 @@ void mnist_initialize(double ***training_image, int **training_label, double ***
   mnist_read_label_file(MNIST_TEST_LABEL_FILE, test_label);
 }
 
-void mnist_finalize(double **training_image, int *training_label, double **test_image, int *test_label)
+void mnist_finalize(float **training_image, int *training_label, float **test_image, int *test_label)
 {
   for (int i = 0; i < MNIST_TRAINING_DATA_SIZE; i++) { free(training_image[i]); }
     free(training_image);
@@ -107,7 +107,7 @@ void mnist_finalize(double **training_image, int *training_label, double **test_
   free(test_label);
 }
 
-void mnist_generate_png(double **data, const int n, const char *filename)
+void mnist_generate_png(float **data, const int n, const char *filename)
 {
   gdImagePtr im = gdImageCreate(MNIST_IMAGE_ROW_SIZE, MNIST_IMAGE_COL_SIZE);
 
@@ -136,7 +136,7 @@ void mnist_generate_png(double **data, const int n, const char *filename)
 
   int mnist_local_main(void)
   {
-    double **training_image, **test_image;
+    float **training_image, **test_image;
     int *training_label, *test_label;
 
     mnist_initialize(&training_image, &training_label, &test_image, &test_label);
