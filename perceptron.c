@@ -13,90 +13,89 @@ typedef struct { Neuron *z; int n; } Layer;
 typedef struct { Layer *layer; Connection *connection; sfmt_t rng; int n; } Network;
 
 double all_to_all(Network *n, const int i, const int j) { return 1.; }
-double uniform_random(Network *n, const int i, const int j) { return 1. - 2. * sfmt_genrand_real2(&n -> rng); }
+double uniform_random(Network *n, const int i, const int j) { return 1. - 2. * sfmt_genrand_real2(&n->rng); }
 double sparse_random(Network *n, const int i, const int j) {
-  return(sfmt_genrand_real2(&n -> rng) < 0.5) ? uniform_random(n, i, j) : 0.;
+  return(sfmt_genrand_real2(&n->rng) < 0.5) ? uniform_random(n, i, j) : 0.;
 }
 double sigmoid(double x) { return 1. /(1. + exp(- x)); }
 
 void createNetwork(Network *network, const int number_of_layers, const sfmt_t rng) {
-  network -> layer =(Layer *) malloc(number_of_layers * sizeof(Layer));
-  network -> connection =(Connection *) malloc(number_of_layers * sizeof(Connection));
-  network -> n = number_of_layers;
-  network -> rng = rng;
+  network->layer =(Layer *)malloc(number_of_layers * sizeof(Layer));
+  network->connection =(Connection *)malloc(number_of_layers * sizeof(Connection));
+  network->n = number_of_layers;
+  network->rng = rng;
 }
 
 void deleteNetwork(Network *network) {
-  free(network -> layer);
-  free(network -> connection);
+  free(network->layer);
+  free(network->connection);
 }
 
 void createLayer(Network *network, const int layer_id, const int number_of_neurons) {
-  Layer *layer = &network -> layer[layer_id];
+  Layer *layer = &network->layer[layer_id];
 
-  layer -> n = number_of_neurons;
+  layer->n = number_of_neurons;
 
-  int bias =(layer_id < network -> n - 1) ? 1 : 0; // 出力層以外はバイアスを用意
+  int bias =(layer_id < network->n - 1) ? 1 : 0; // 出力層以外はバイアスを用意
 
-  layer -> z =(Neuron *) malloc((number_of_neurons + bias) * sizeof(Neuron));
-  for(int i = 0; i < layer -> n; i++) { layer -> z[i] = 0.; }
-  if(bias) { layer -> z[layer -> n] = +1.; } // バイアス初期化
-
+  layer->z =(Neuron *)malloc((number_of_neurons + bias) * sizeof(Neuron));
+  for(int i = 0; i < layer->n; i++) { layer->z[i] = 0.; }
+  if(bias) { layer->z[layer->n] = +1.; } // バイアス初期化
 }
 
 void deleteLayer(Network *network, const int layer_id) {
-  Layer *layer = &network -> layer[layer_id];
-  free(layer -> z);
+  Layer *layer = &network->layer[layer_id];
+  free(layer->z);
 }
 
 void createConnection(Network *network, const int layer_id, double(*func)(Network *, const int, const int)) {
-  Connection *connection = &network -> connection[layer_id];
+  Connection *connection = &network->connection[layer_id];
 
-  const int n_pre = network -> layer[layer_id] . n + 1; // +1はバイアスの分
-  const int n_post =(layer_id == network -> n - 1) ? 1 : network -> layer[layer_id + 1] . n;
+  const int n_pre = network->layer[layer_id].n + 1; // +1はバイアスの分
+  const int n_post = (layer_id == network->n - 1) ? 1 : network->layer[layer_id + 1].n;
 
-  connection -> w =(Weight *) malloc(n_pre * n_post * sizeof(Weight));
+  connection->w =(Weight *)malloc(n_pre * n_post * sizeof(Weight));
   for(int i = 0; i < n_post; i++) {
     for(int j = 0; j < n_pre; j++) {
-      connection -> w[j + n_pre * i] = func(network, i, j);
+      connection->w[j + n_pre * i] = func(network, i, j);
     }
   }
 
-  connection -> dw =(Weight *) malloc(n_pre * n_post * sizeof(Weight));
+  connection->dw =(Weight *)malloc(n_pre * n_post * sizeof(Weight));
   for(int i = 0; i < n_post; i++) {
     for(int j = 0; j < n_pre; j++) {
-      connection -> dw[j + n_pre * i] = 0.;
+      connection->dw[j + n_pre * i] = 0.;
     }
   }
 
-  connection -> n_pre = n_pre;
-  connection -> n_post = n_post;
+  connection->n_pre = n_pre;
+  connection->n_post = n_post;
 }
 
 void deleteConnection(Network *network, const int layer_id) {
-  Connection *connection = &network -> connection[layer_id];
-  free(connection -> w);
-  free(connection -> dw);
+  Connection *connection = &network->connection[layer_id];
+  free(connection->w);
+  free(connection->dw);
 }
 
 void setInput(Network *network, Neuron x[]) {
-  Layer *input_layer = &network -> layer[0];
-  for(int i = 0; i < input_layer -> n; i++) {
-    input_layer -> z[i] = x[i];
+  Layer *input_layer = &network->layer[0];
+  for(int i = 0; i < input_layer->n; i++) {
+    input_layer->z[i] = x[i];
   }
 }
 
 void forwardPropagation(Network *network, double(*activation)(double)) {
-  for(int i = 0; i < network -> n - 1; i++) {
-    Layer *l_pre = &network -> layer[i];
-    Layer *l_post = &network -> layer[i + 1];
-    Connection *c = &network -> connection[i];
-    for(int j = 0; j < c -> n_post; j++) {
+  for(int i = 0; i < network->n - 1; i++) {
+    Layer *l_pre = &network->layer[i];
+    Layer *l_post = &network->layer[i + 1];
+    Connection *c = &network->connection[i];
+    for(int j = 0; j < c->n_post; j++) {
       Neuron u = 0.;
-      for(int k = 0; k < c -> n_pre; k++) {
-       u +=(c -> w[k + c -> n_pre * j]) *(l_pre -> z[k]);
+      for(int k = 0; k < c->n_pre; k++) {
+       u +=(c->w[k + c->n_pre * j]) * (l_pre->z[k]);
      }
-     l_post -> z[j] = activation(u);
+     l_post->z[j] = activation(u);
    }
  }
 }
@@ -106,20 +105,20 @@ double updateByPerceptronRule(Network *network, Neuron z[]) {
 
   double error = 0.;
   {
-    Layer *l = &network -> layer[network -> n - 1];
-    for(int j = 0; j < l -> n; j++) {
-      error += 0.5 *((l -> z[j] - z[j]) *(l -> z[j] - z[j]));
+    Layer *l = &network->layer[network->n - 1];
+    for(int j = 0; j < l->n; j++) {
+      error += 0.5 * ((l->z[j] - z[j]) * (l->z[j] - z[j]));
     }
   }
 
-  Layer *output_layer = &network -> layer[network -> n - 1];
-  Layer *hidden_layer = &network -> layer[network -> n - 2];
-  Connection *c = &network -> connection[network -> n - 2];
-  for(int i = 0; i < c -> n_post; i++) {
-    for(int j = 0; j < c -> n_pre; j++) {
-      double o = output_layer -> z[i];
-      double d =(z[i]  - o) * o *(1 - o);
-      c -> dw[j + c -> n_pre * i] += Eta * d *(hidden_layer -> z[j]);
+  Layer *output_layer = &network->layer[network->n - 1];
+  Layer *hidden_layer = &network->layer[network->n - 2];
+  Connection *c = &network->connection[network->n - 2];
+  for(int i = 0; i < c->n_post; i++) {
+    for(int j = 0; j < c->n_pre; j++) {
+      double o = output_layer->z[i];
+      double d = (z[i]  - o) * o * (1 - o);
+      c->dw[j + c->n_pre * i] += Eta * d * (hidden_layer->z[j]);
     }
   }
 
@@ -127,24 +126,55 @@ double updateByPerceptronRule(Network *network, Neuron z[]) {
 }
 
 void initializeDW(Network *network) {
-  Connection *c = &network -> connection[network -> n - 2];
-  for(int i = 0; i < c -> n_post; i++) {
-    for(int j = 0; j < c -> n_pre; j++) {
-      c -> dw[j + c -> n_pre * i] = 0.;
+  Connection *c = &network->connection[network->n - 2];
+  for(int i = 0; i < c->n_post; i++) {
+    for(int j = 0; j < c->n_pre; j++) {
+      c->dw[j + c->n_pre * i] = 0.;
     }
   }
 }
 
 void updateW(Network *network) {
-  Connection *c = &network -> connection[network -> n - 2];
-  for(int i = 0; i < c -> n_post; i++) {
-    for(int j = 0; j < c -> n_pre; j++) {
-      c -> w[j + c -> n_pre * i] += c -> dw[j + c -> n_pre * i];
+  Connection *c = &network->connection[network->n - 2];
+  for(int i = 0; i < c->n_post; i++) {
+    for(int j = 0; j < c->n_pre; j++) {
+      c->w[j + c->n_pre * i] += c->dw[j + c->n_pre * i];
     }
   }
 }
 
-int main(void) {
+void dump_neuron(int i, Neuron *neuron) {
+  printf("    - neuron[%d]: %lf\n", i, *neuron);
+}
+
+void dump_layer(Layer *layer) {
+  for(int i = 0; i < layer->n; i++) { dump_neuron(i, &layer->z[i]); }
+}
+
+void dump_weight(Weight *weight) {
+  printf("    weight: %lf\n", *weight);
+}
+
+void dump_connection(Connection *connection) {
+  for(int j = 0; j < connection->n_pre; j++) {
+    for(int i = 0; i < connection->n_post; i++) {
+      printf("    %d -> %d: %lf\n", j, i, connection->w[j + connection->n_pre * i]);
+    }
+  }
+}
+
+void dump_network(Network *network) {
+  printf("network:\n");
+  printf("  n: %d\n", network->n);
+  for(int i = 0; i < network->n; i++) {
+    printf("  layer[%d]:\n", i);
+    dump_layer(&network->layer[i]);
+    printf("  connection[%d]:\n", i);
+    dump_connection(&network->connection[i]);
+  }
+}
+
+int main(int argc, char **argv) {
   sfmt_t rng;
   sfmt_init_gen_rand(&rng, getpid());
 
