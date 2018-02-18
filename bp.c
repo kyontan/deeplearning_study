@@ -60,8 +60,10 @@ void createConnection(Network *network, const int layer_id, float(*func)(Network
   connection->dw = (Weight *) malloc(n_pre * n_post * sizeof(Weight));
 
   if (func != NULL) {
+    int j;
+    #pragma omp parallel for private(j)
     for(int i = 0; i < n_post; i++) {
-      for(int j = 0; j < n_pre; j++) {
+      for(j = 0; j < n_pre; j++) {
         connection->w[n_pre * i + j] = func(network, i, j);
         connection->dw[n_pre * i + j] = 0.;
       }
@@ -85,8 +87,10 @@ void copyConnection(const Network *src_network, const int src_layer_id, Network 
   const int n_pre = src_network->layer[src_layer_id].n + 1; // +1 for bias
   const int n_post = (src_layer_id == src_network->n - 1) ? 1 : src_network->layer[src_layer_id + 1].n;
 
+  int j;
+  #pragma omp parallel for private(j)
   for(int i = 0; i < n_post; i++) {
-    for(int j = 0; j < n_pre; j++) {
+    for(j = 0; j < n_pre; j++) {
       dst_connection->w[n_pre * i + j] = src_connection->w[n_pre * i + j];
     }
   }
@@ -100,8 +104,10 @@ void copyConnectionWithTranspose(const Network *src_network, const int src_layer
   const int dst_n_pre = dst_network->layer[dst_layer_id].n + 1; // +1 for bias
   const int n_post = (src_layer_id == src_network->n - 1) ? 1 : src_network->layer[src_layer_id + 1].n;
 
+  int j;
+  #pragma omp parallel for private(j)
   for(int i = 0; i < n_post; i++) {
-    for(int j = 0; j < src_n_pre - 1; j++) { // skipping bias
+    for(j = 0; j < src_n_pre - 1; j++) { // skipping bias
       dst_connection->w[dst_n_pre * j + i] = src_connection->w[src_n_pre * i + j];
     }
   }
