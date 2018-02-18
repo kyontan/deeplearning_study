@@ -124,7 +124,12 @@ void forwardPropagation(Network *network, float(*activation)(float)) {
 
       for(int k = 0; k < c->n_pre; k++) {
         u += (c->w[k + c->n_pre * j]) * (l_pre->z[k]);
+
+        // if (c->n_post == 10) {
+        //   printf("%d -> %d: %f\n", k, j, u);
+        // }
       }
+
 
       l_post->z[j] = activation(u);
     }
