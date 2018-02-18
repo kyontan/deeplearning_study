@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
   {
     const int n_hidden_layer = 1;
-    const int n_neuron[] = { MNIST_IMAGE_SIZE, 64, MNIST_LABEL_SIZE };
+    const int n_neuron[] = { MNIST_IMAGE_SIZE, 64, MNIST_IMAGE_SIZE };
 
     createNetwork(&network, 2 + n_hidden_layer, rng);
 
@@ -38,9 +38,10 @@ int main(int argc, char **argv) {
     createLayer(&network, n_hidden_layer + 1, n_neuron[n_hidden_layer + 1]);
 
     for (int i = 0; i < n_hidden_layer; i++) {
-      createConnection(&network, i, sparse_random);
+      createConnection(&network, i, uniform_random);
     }
-    createConnection(&network, n_hidden_layer, uniform_random);
+    createConnection(&network, n_hidden_layer, NULL);
+    copyConnectionWithTranspose(&network, n_hidden_layer - 1, &network, n_hidden_layer);
 
     // for (int i = 0; i < MNIST_TRAINING_DATA_SIZE; i++) {
     for (int i = 0; i < n_epoch; i++) {
@@ -60,6 +61,7 @@ int main(int argc, char **argv) {
       }
       printf("1: epoch: %d, error: %f\n", i, error);
       updateW(&network);
+      copyConnectionWithTranspose(&network, n_hidden_layer - 1, &network, n_hidden_layer);
     }
   }
 
@@ -67,7 +69,6 @@ int main(int argc, char **argv) {
   {
     const int n_hidden_layer = 2;
     const int n_neuron[] = { MNIST_IMAGE_SIZE, 64, 32, 64 };
-    // const int n_neuron[] = { MNIST_IMAGE_SIZE, 32, 24, MNIST_LABEL_SIZE };
 
     createNetwork(&network2, 2 + n_hidden_layer, rng);
 
@@ -77,14 +78,10 @@ int main(int argc, char **argv) {
     }
     createLayer(&network2, n_hidden_layer + 1, n_neuron[n_hidden_layer + 1]);
 
-
-    for (int i = 1; i <= n_hidden_layer - 1; i++) {
-      createConnection(&network2, i, sparse_random);
-    }
-
     createConnection(&network2, 0, NULL);
     copyConnection(&network, 0, &network2, 0);
 
+    createConnection(&network2, n_hidden_layer - 1, uniform_random);
     createConnection(&network2, n_hidden_layer, NULL);
     copyConnectionWithTranspose(&network2, n_hidden_layer - 1, &network2, n_hidden_layer);
 
@@ -107,8 +104,6 @@ int main(int argc, char **argv) {
         setInput(&network2, training_image[k]);
         forwardPropagation(&network2, sigmoid);
 
-        // float z[MNIST_LABEL_SIZE] = { 0., };
-        // z[training_label[k]] = 1.;
         error += updateByBackPropagationPartial(&network2, network2.layer[n_hidden_layer-1].z);
       }
       printf("2: epoch: %d, error: %f\n", i, error);
@@ -127,7 +122,6 @@ int main(int argc, char **argv) {
     deleteLayer(&network2, n_hidden_layer + 1);
 
     createLayer(&network2, n_hidden_layer + 1, n_neuron[n_hidden_layer + 1]);
-
     createConnection(&network2, n_hidden_layer, uniform_random);
 
     // for (int i = 0; i < MNIST_TRAINING_DATA_SIZE; i++) {
@@ -144,6 +138,7 @@ int main(int argc, char **argv) {
 
         float z[MNIST_LABEL_SIZE] = { 0., };
         z[training_label[k]] = 1.;
+
         error += updateByBackPropagation(&network2, z);
       }
 
