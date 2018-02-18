@@ -35,7 +35,10 @@ float updateByBackPropagationPartial(Network *network, Neuron z[]);
 void initializeDW(Network *network);
 void updateW(Network *network);
 
-
+void dump_neuron(int i, Neuron *neuron);
+void dump_layer(Layer *layer);
+void dump_weight(Weight *weight);
+void dump_connection(Connection *connection);
 void dump_network(Network *network);
 
 #endif // _BP_H_
