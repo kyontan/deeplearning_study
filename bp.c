@@ -121,9 +121,11 @@ void forwardPropagation(Network *network, float(*activation)(float)) {
     Connection *c = &network->connection[i];
     for(int j = 0; j < c->n_post; j++) {
       Neuron u = 0.;
+
       for(int k = 0; k < c->n_pre; k++) {
         u += (c->w[k + c->n_pre * j]) * (l_pre->z[k]);
       }
+
       l_post->z[j] = activation(u);
     }
   }
@@ -294,7 +296,7 @@ int bp_local_main(void) {
   fprintf(stderr, "# of epochs = %d\n", i);
 
   // Test
-  Layer *output_layer = &network . layer[network. n - 1];
+  Layer *output_layer = &network.layer[network. n - 1];
   const int n = output_layer->n;
   for(int i = 0; i < number_of_training_data; i++) {
     setInput(&network, x[i]);
