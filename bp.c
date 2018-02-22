@@ -206,10 +206,10 @@ void initializeDW(Network *network) {
     Connection *c = &network->connection[layer_id];
     for(int i = 0; i < c->n_post; i++) {
       for(int j = 0; j < c->n_pre; j++) {
-       c->dw[c->n_pre * i + j] = 0.;
-     }
-   }
- }
+        c->dw[c->n_pre * i + j] = 0.;
+      }
+    }
+  }
 }
 
 void updateW(Network *network) {
@@ -217,10 +217,10 @@ void updateW(Network *network) {
     Connection *c = &network->connection[layer_id];
     for(int i = 0; i < c->n_post; i++) {
       for(int j = 0; j < c->n_pre; j++) {
-       c->w[c->n_pre * i + j] += c->dw[c->n_pre * i + j];
-     }
-   }
- }
+        c->w[c->n_pre * i + j] += c->dw[c->n_pre * i + j];
+      }
+    }
+  }
 }
 
 void dump_neuron(int i, Neuron *neuron) {
@@ -252,5 +252,4 @@ void dump_network(Network *network) {
     printf("  connection[%d]:\n", i);
     dump_connection(&network->connection[i]);
   }
-
 }
