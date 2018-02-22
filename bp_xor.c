@@ -1,15 +1,22 @@
 #include "bp.h"
+#include <stdlib.h>
 #include <unistd.h>
 
-int main(void) {
+int main(int argc, char **argv) {
   sfmt_t rng;
   sfmt_init_gen_rand(&rng, getpid());
+
+  if (argc != 2) {
+    fprintf(stderr, "%s middle_layer_neurons\n", argv[0]);
+    return 1;
+  }
+  const int middle_layer_neurons = atoi(argv[1]);
 
   Network network;
   createNetwork(&network, 3, rng);
   createLayer(&network, 0, 2);
   // createLayer(&network, 1, 2);
-  createLayer(&network, 1, 128);
+  createLayer(&network, 1, middle_layer_neurons);
   createLayer(&network, 2, 1);
   createConnection(&network, 0, sparse_random);
   createConnection(&network, 1, uniform_random);

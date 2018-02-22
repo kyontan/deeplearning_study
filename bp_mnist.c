@@ -8,13 +8,15 @@
 int main(int argc, char **argv) {
   // const int n_epoch = 10000;
   // const int batch_size = 100;
-  if (argc != 3) {
-    printf("%s batch_size epoch_count\n", argv[0]);
+  if (argc != 4) {
+    printf("%s batch_size epoch_count neurons_of_middle_layer\n", argv[0]);
     return 1;
   }
 
   int batch_size = atoi(argv[1]);
   int n_epoch = atoi(argv[2]);
+
+  const int n_hidden_layer_neuron = atoi(argv[3]);
 
   float **training_image, **test_image;
   int *training_label, *test_label;
@@ -24,7 +26,7 @@ int main(int argc, char **argv) {
   sfmt_init_gen_rand(&rng, getpid());
 
   const int n_hidden_layer = 1;
-  const int n_hidden_layer_neuron = 64;
+  // const int n_hidden_layer_neuron = 64;
 
   Network network;
   createNetwork(&network, 2 + n_hidden_layer, rng);

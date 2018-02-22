@@ -8,13 +8,15 @@
 int main(int argc, char **argv) {
   // const int n_epoch = 10000;
   // const int batch_size = 100;
-  if (argc != 3) {
-    printf("%s batch_size epoch_count\n", argv[0]);
+  if (argc != 5) {
+    printf("%s batch_size epoch_count neurons_of_1st_hidden_layer neurons_of_2nd_hidden_layer\n", argv[0]);
     return 1;
   }
 
   int batch_size = atoi(argv[1]);
   int n_epoch = atoi(argv[2]);
+
+  const int n_hidden_layer_neuron[2] = { atoi(argv[3]), atoi(argv[4]) };
 
   float **training_image, **test_image;
   int *training_label, *test_label;
@@ -27,7 +29,7 @@ int main(int argc, char **argv) {
 
   {
     const int n_hidden_layer = 1;
-    const int n_neuron[] = { MNIST_IMAGE_SIZE, 64, MNIST_IMAGE_SIZE };
+    const int n_neuron[] = { MNIST_IMAGE_SIZE, n_hidden_layer_neuron[0], MNIST_IMAGE_SIZE };
 
     createNetwork(&network, 2 + n_hidden_layer, rng);
 
@@ -68,7 +70,7 @@ int main(int argc, char **argv) {
   Network network2;
   {
     const int n_hidden_layer = 2;
-    const int n_neuron[] = { MNIST_IMAGE_SIZE, 64, 32, 64 };
+    const int n_neuron[] = { MNIST_IMAGE_SIZE, n_hidden_layer_neuron[0], n_hidden_layer_neuron[1], n_hidden_layer_neuron[0] };
 
     createNetwork(&network2, 2 + n_hidden_layer, rng);
 
@@ -116,7 +118,7 @@ int main(int argc, char **argv) {
 
   {
     const int n_hidden_layer = 2;
-    const int n_neuron[] = { MNIST_IMAGE_SIZE, 64, 32, MNIST_LABEL_SIZE };
+    const int n_neuron[] = { MNIST_IMAGE_SIZE, n_hidden_layer_neuron[0], n_hidden_layer_neuron[1], MNIST_LABEL_SIZE };
 
     deleteConnection(&network2, n_hidden_layer);
     deleteLayer(&network2, n_hidden_layer + 1);
